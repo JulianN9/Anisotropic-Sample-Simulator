@@ -100,7 +100,7 @@ def poissonmatrix(Nx,Ny,Nz,rx,ry,rz,plot=False):
     return A
 
 # Calculating the Voltage
-def voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout):
+def voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout,plot=False):
     V = np.zeros(Nx*Ny*Nz)
     for count,value in enumerate(L):
         if count < floor(len(L)/2):
@@ -116,11 +116,22 @@ def voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout):
     Arinv = np.linalg.inv(Ar)
     Vr = np.matmul(Arinv,b)
     rcount = 0
-    for i in range(Nx*Ny):
-        if (not(i in L))&(not(-Nx*Ny+i in L)):
+    for i in range(Nx*Ny*Nz):
+        if (not(i in L))&(not(-Nx*Ny*Nz+i in L)):
             V[i] = -Vr[i-rcount]
         else:
             rcount = rcount + 1
+
+    if plot==True:
+        fig = plt.figure(figsize=(12,4))
+        plt.subplot(111)
+        plt.imshow(V.reshape(Nz,Ny,Nx)[1],interpolation='none')
+        clb=plt.colorbar()
+        clb.set_label('Matrix elements values')
+        plt.title('Matrix A ',fontsize=24)
+
+        fig.tight_layout()
+        plt.show()
     return(V)
 
 # Simulated for a given set of input/output pins
@@ -132,7 +143,7 @@ def simulate(Nx,Ny,Nz,Ix,Iy,Iz,Ox,Oy,Oz,Vin,Vout):
 
     for Tctr in range(0,N):
         T = 300.0-Tctr*(300.-2.)/(N-1)
-        Rx = rx(T,Nx); Ry = newry(T,Ny); Rz = newry(T,Ny)
+        Rx = rx(T,Nx); Ry = newry(T,Ny); Rz = newry(T,Nz)
         A = poissonmatrix(Nx,Ny,Nz,Rx,Ry,Rz,False)
 
         V = voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout)
@@ -160,6 +171,9 @@ def simulate(Nx,Ny,Nz,Ix,Iy,Iz,Ox,Oy,Oz,Vin,Vout):
     return df
 
 if __name__ == "__main__":
-    T = 300; Nx =4; Ny = 3; Nz =1
+    T = 300; Nx =4; Ny = 3; Nz =2
     Rx = 1; Ry = 2; Rz = 2
+    L = [(2)+Nx*(0),(2)+Nx*(Ny-1)]
+    Vin = 5; Vout =-5
     A = poissonmatrix(Nx,Ny,Nz,Rx,Ry,Rz,True)
+    V = voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout,True)

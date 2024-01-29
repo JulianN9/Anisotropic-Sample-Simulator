@@ -57,10 +57,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.ContourToolbar = NavigationToolbar(self.ContourCanvas, self)
         # self.ContourLayout.addWidget(self.ContourToolbar)
 
+        self.TValue = 0
+        self.ZValue = 1
+
         self.TemperatureSlider = QSlider(self.ContourTab)
         self.TemperatureSlider.valueChanged[int].connect(self.changeTValue)
         self.TemperatureSlider.setDisabled(True)
         self.TemperatureSlider.setOrientation(QtCore.Qt.Horizontal)
+
+        self.ZSlider = QSlider(self.ContourTab)
+        self.ZSlider.setMinimum(1)
+        self.ZSlider.setMaximum(1)
+        self.ZSlider.valueChanged[int].connect(self.changeZValue)
+        self.ZSlider.setDisabled(True)
+        self.ZSlider.setOrientation(QtCore.Qt.Horizontal)
+
 
         self.TemperatureLabel = QLabel(self.ContourTab)
         self.TemperatureLabel.setText("Temperature: "+str(300.0))
@@ -68,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ContourLayout.addWidget(self.ContourCanvas)
         self.ContourLayout.addWidget(self.TemperatureSlider)
         self.ContourLayout.addWidget(self.TemperatureLabel)
+        self.ContourLayout.addWidget(self.ZSlider)
 
         # Resistance Presentation:
         self.ResistanceCanvas = MplCanvas(self, width=5, height=4, dpi=100)
@@ -92,34 +104,42 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.df = simulate(self.Nx,self.Ny,self.Nz,self.Ix,self.Iy,self.Iz,self.Ox,self.Oy,self.Oz,self.Vin,self.Vout)
 
         contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,0)
-        self.TemperatureSlider.setValue(0)
         self.ContourCanvas.draw()
+
+        self.TemperatureSlider.setValue(0)
         self.TemperatureSlider.setEnabled(True)
+
+        self.ZSlider.setValue(1)
+        self.ZSlider.setMaximum(self.NzBox.value())
+        self.ZSlider.setEnabled(True)
+
         self.MeasureButton.setEnabled(True)
 
         self.ResistanceCanvas.axes.clear()
         self.ResistanceCanvas.draw()
 
-        print("Clicked")
-        # print(df)
-
     def Measure(self):
         self.IPx = self.IPxBox.value()
         self.IPy = self.IPyBox.value()
+        self.IPz = self.IPzBox.value()
         self.OPx = self.OPxBox.value()
         self.OPy = self.OPyBox.value()
+        self.OPz = self.OPzBox.value()
 
-        ResistancePlot(self.ResistanceCanvas.axes,self.df,self.IPx,self.IPy,self.OPx,self.OPy,self.CheckX.isChecked(),self.CheckY.isChecked())
+        ResistancePlot(self.ResistanceCanvas.axes,self.df,self.IPx,self.IPy,self.IPz,self.OPx,self.OPy,self.OPz,self.CheckX.isChecked(),self.CheckY.isChecked())
         self.ResistanceCanvas.draw()
 
-        print("Clicked Measure")
-        # print(df)
-
     def changeTValue(self, value):
-        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,value)
+        self.TValue = value
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,self.ZValue,value)
         self.ContourCanvas.draw()
         self.TemperatureLabel.setText("Temperature: "+str(300.0-value*(300.-2.)/(100-1)))
         # print(value)
+
+    def changeZValue(self, value):
+        self.ZValue = value
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,value,self.TValue)
+        self.ContourCanvas.draw()
 
     def changeNxValue(self, value):
         self.IxBox.setMaximum(value)

@@ -13,13 +13,13 @@ def RVTaxes(ax,ur = False):
         ax.set_xlim(0,300)
         ax.legend(fontsize='16')
 
-def ResistancePlot(ax,df,IPx,IPy,OPx,OPy,CheckX,CheckY):
+def ResistancePlot(ax,df,IPx,IPy,IPz,OPx,OPy,OPz,CheckX,CheckY):
     ax.clear()
 
-    inputpin = "V["+str(IPx)+","+str(IPy)+"]" 
-    outputpin = "V["+str(OPx)+","+str(OPy)+"]"
+    inputpin = "V["+str(IPx)+","+str(IPy)+","+str(IPz)+"]" 
+    outputpin = "V["+str(OPx)+","+str(OPy)+","+str(OPz)+"]"
 
-    lengthscale = np.sqrt((IPx-OPx)**2+(IPy-OPy)**2)
+    # lengthscale = np.sqrt((IPx-OPx)**2+(IPy-OPy)**2)
 
     if CheckX == True:
         ax.scatter(df["T"],df["rx"],color='red',s=4.0,label= r'$\rho_{ab}$(T)')
