@@ -9,7 +9,7 @@ matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
-from Simulator import simulate
+from Simulator3d import simulate
 from ContourPlot import contourfit
 from MatrixDiagram import plotMatrix
 from ResistancePlot import ResistancePlot
@@ -80,15 +80,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def Initialize(self):
         self.Nx = self.NxBox.value()
         self.Ny = self.NyBox.value()
+        self.Nz = self.NzBox.value()
         self.Ix = self.IxBox.value()
         self.Iy = self.IyBox.value()
+        self.Iz = self.IzBox.value()
         self.Ox = self.OxBox.value()
         self.Oy = self.OyBox.value()
+        self.Oz = self.OzBox.value()
         self.Vin = self.IvBox.value()
         self.Vout = self.OvBox.value()
-        self.df = simulate(self.Nx,self.Ny,self.Ix,self.Iy,self.Ox,self.Oy,self.Vin,self.Vout)
+        self.df = simulate(self.Nx,self.Ny,self.Nz,self.Ix,self.Iy,self.Iz,self.Ox,self.Oy,self.Oz,self.Vin,self.Vout)
 
-        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,0)
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,0)
         self.TemperatureSlider.setValue(0)
         self.ContourCanvas.draw()
         self.TemperatureSlider.setEnabled(True)
@@ -113,7 +116,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # print(df)
 
     def changeTValue(self, value):
-        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,value)
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,value)
         self.ContourCanvas.draw()
         self.TemperatureLabel.setText("Temperature: "+str(300.0-value*(300.-2.)/(100-1)))
         # print(value)
