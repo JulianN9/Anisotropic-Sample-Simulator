@@ -13,7 +13,7 @@ def RVTaxes(ax,ur = False):
         ax.set_xlim(0,300)
         ax.legend(fontsize='16')
 
-def ResistancePlot(ax,df,IPx,IPy,IPz,OPx,OPy,OPz,CheckX,CheckY):
+def ResistancePlot(ax,df,IPx,IPy,IPz,OPx,OPy,OPz,CheckX,CheckY,CheckZ):
     ax.clear()
 
     inputpin = "V["+str(IPx)+","+str(IPy)+","+str(IPz)+"]" 
@@ -22,9 +22,11 @@ def ResistancePlot(ax,df,IPx,IPy,IPz,OPx,OPy,OPz,CheckX,CheckY):
     # lengthscale = np.sqrt((IPx-OPx)**2+(IPy-OPy)**2)
 
     if CheckX == True:
-        ax.scatter(df["T"],df["rx"],color='red',s=4.0,label= r'$\rho_{ab}$(T)')
+        ax.scatter(df["T"],df["rx"],color='red',s=4.0,label= r'$\rho_{x}$(T)')
     if CheckY == True:
-        ax.scatter(df["T"],df["ry"],color='blue',s=4.0,label= r'$\rho_c$(T)')
+        ax.scatter(df["T"],df["ry"],color='blue',s=4.0,label= r'$\rho_y$(T)')
+    if CheckZ == True:
+        ax.scatter(df["T"],df["rz"],color='purple',s=4.0,label= r'$\rho_z$(T)')
     ax.scatter(df["T"],(df[outputpin]-df[inputpin])/df["I"],color='black',s=8.0,marker='v',label='Input')
     # ax.scatter(df["T"],2.65*(df[outputpin]-df[inputpin]),color='black',s=8.0,marker='v',label='Input')
     

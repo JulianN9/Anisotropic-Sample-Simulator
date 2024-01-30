@@ -1,8 +1,10 @@
 import sys
+import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QSlider, QLabel, QSizePolicy, QVBoxLayout
+from PySide6.QtWidgets import QSlider, QLabel, QSizePolicy, QVBoxLayout, QDialog
 from ui_MainWindow import Ui_MainWindow
+from ui_AdvancedOptions import Ui_AdvancedOptions
 import matplotlib
 matplotlib.use('Qt5Agg')
 
@@ -13,6 +15,15 @@ from Simulator3d import simulate
 from ContourPlot import contourfit
 from MatrixDiagram3d import plotMatrix, plotLeads
 from ResistancePlot import ResistancePlot
+
+# FINISH IMPLEMENTING THIS
+def inputlist(list,Xwidth,Ywidth,Zwidth):
+    newlist=[]
+    for i in range(Xwidth):
+        for j in range(Ywidth):
+            for k in range(Zwidth):
+                newlist.append([list[0]+i,list[1]+j,list[2]+k])
+    return newlist
 
 # Class to plot matplotlib
 class MplCanvas(FigureCanvasQTAgg):
@@ -25,6 +36,18 @@ class MplCanvas(FigureCanvasQTAgg):
             self.axes = fig.add_subplot(111,projection='3d')
         super(MplCanvas, self).__init__(fig)
 
+# Advanced Options Dialog Class
+class AdvancedOptions(QtWidgets.QDialog, Ui_AdvancedOptions):
+    def __init__(self,Nx,Ny,Nz,Ilist,Olist):
+        super(AdvancedOptions, self).__init__()
+        self.setupUi(self)
+        self.INxBox.setMaximum(Nx-Ilist[0]+1)
+        self.INyBox.setMaximum(Ny-Ilist[1]+1)
+        self.INzBox.setMaximum(Nz-Ilist[2]+1)
+        self.ONxBox.setMaximum(Nx-Olist[0]+1)
+        self.ONyBox.setMaximum(Ny-Olist[1]+1)
+        self.ONzBox.setMaximum(Nz-Olist[2]+1)
+
 # Main Window Class
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -35,6 +58,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.pushButton.setCheckable(True)
         self.IntializeButton.clicked.connect(self.Initialize)
         self.MeasureButton.clicked.connect(self.Measure)
+        self.toolButton.clicked.connect(self.OpenAO)
+        self.TemperatureList = np.linspace(2,300,100)
 
         # Setting Ranges on Positions:
         self.NxBox.valueChanged[int].connect(self.changeNxValue)
@@ -79,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
         self.TemperatureLabel = QLabel(self.ContourTab)
-        self.TemperatureLabel.setText("Temperature: "+str(300.0))
+        self.TemperatureLabel.setText("Temperature: "+str(self.TemperatureList[0]))
 
         self.ContourLayout = QVBoxLayout()
         self.ContourTab.setLayout(self.ContourLayout)
@@ -102,17 +127,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def Initialize(self):
         # Defining size of matrix, current input and output locations and values:
         self.Nx = self.NxBox.value(); self.Ny = self.NyBox.value(); self.Nz = self.NzBox.value()
-        self.Ix = self.IxBox.value(); self.Iy = self.IyBox.value(); self.Iz = self.IzBox.value()
-        self.Ox = self.OxBox.value(); self.Oy = self.OyBox.value(); self.Oz = self.OzBox.value()
+        self.Ilist = [self.IxBox.value(), self.IyBox.value(), self.IzBox.value()]
+        self.Olist = [ self.OxBox.value(), self.OyBox.value(), self.OzBox.value()]
         self.Vin = self.IvBox.value(); self.Vout = self.OvBox.value()
         # Simulating the voltage matrices across the temperature range
-        self.df = simulate(self.Nx,self.Ny,self.Nz,self.Ix,self.Iy,self.Iz,self.Ox,self.Oy,self.Oz,self.Vin,self.Vout)
+        self.df = simulate(self.Nx,self.Ny,self.Nz,[self.Ilist],[self.Olist],self.Vin,self.Vout,self.TemperatureList)
         # Plotting the TMax, Z=1 contour on the contour tab:
         self.ContourCanvas.axes.clear()
-        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,0)
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,0,self.Vin,self.Vout)
         self.ContourCanvas.draw()
         # Setting the T and slider to the correct locations and maximum:
         self.TemperatureSlider.setValue(0)
+        self.TemperatureSlider.setMaximum(len(self.TemperatureList)-1)
         self.ZSlider.setValue(1)
         self.ZSlider.setMaximum(self.NzBox.value())
         # Enabling the measure resistivity button:
@@ -129,7 +155,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.IPx = self.IPxBox.value(); self.IPy = self.IPyBox.value(); self.IPz = self.IPzBox.value()
         self.OPx = self.OPxBox.value(); self.OPy = self.OPyBox.value(); self.OPz = self.OPzBox.value()
         # Plot the resistance across these points through the temperature range.
-        ResistancePlot(self.ResistanceCanvas.axes,self.df,self.IPx,self.IPy,self.IPz,self.OPx,self.OPy,self.OPz,self.CheckX.isChecked(),self.CheckY.isChecked())
+        ResistancePlot(self.ResistanceCanvas.axes,self.df,self.IPx,self.IPy,self.IPz,self.OPx,self.OPy,self.OPz,self.CheckX.isChecked(),self.CheckY.isChecked(),self.CheckZ.isChecked())
         self.ResistanceCanvas.draw()
         # Re-draw the matrix canvas
         self.MatrixCanvas.axes.clear()
@@ -138,16 +164,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         plotLeads(self.MatrixCanvas.axes,self.IPx,self.IPy,self.IPz,self.OPx,self.OPy,self.OPz,'Black','X')
         self.MatrixCanvas.draw()
 
+    def OpenAO(self):
+        dlg = AdvancedOptions(self.NxBox.value(),self.NyBox.value(),self.NzBox.value(),[self.IxBox.value(),self.IyBox.value(),self.IzBox.value()],[self.OxBox.value(),self.OyBox.value(),self.OzBox.value()])
+        dlg.setWindowTitle("HELLO!")
+        if dlg.exec():
+            self.MeasurementWidget.setEnabled(False)
+            self.TemperatureList = np.linspace(dlg.TmBox.value(),dlg.TMBox.value(),dlg.TeBox.value())
+
+
     def changeTValue(self, value):
         self.TValue = value
-        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,self.ZValue,value)
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,self.ZValue,value,self.Vin,self.Vout)
         self.ContourCanvas.draw()
-        self.TemperatureLabel.setText("Temperature: "+str(300.0-value*(300.-2.)/(100-1)))
-        # print(value)
+        self.TemperatureLabel.setText("Temperature: "+str(self.TemperatureList[value]))
 
     def changeZValue(self, value):
         self.ZValue = value
-        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,value,self.TValue)
+        contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,value,self.TValue,self.Vin,self.Vout)
         self.ContourCanvas.draw()
 
     def changeNxValue(self, value):
@@ -183,6 +216,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.OPzBox.setMaximum(value)
         # Disabling the measurement widget
         self.MeasurementWidget.setEnabled(False)
+        # Re-setting the Z Value on the slider:
+        if self.ZValue > value:
+            self.ZValue = value
         # Re-draw the matrix canvas
         self.MatrixCanvas.axes.clear()
         plotMatrix(self.MatrixCanvas.axes,self.NxBox.value(),self.NyBox.value(),self.NzBox.value())
@@ -200,6 +236,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def changeVValue(self, value):
         # Disabling the measurement widget
+        self.IvBox.setMinimum(self.OvBox.value()+0.01)
+        self.OvBox.setMaximum(self.IvBox.value()-0.01)
         self.MeasurementWidget.setEnabled(False)
 
 app = QtWidgets.QApplication(sys.argv)

@@ -78,7 +78,7 @@ def contouraxes(ax,heatmap,Nx,Ny,axtitle=1,gift = False,mixed = 'none'):
         if(mixed == 'bottom'):
             ax.set_yticks([])
 
-def contourfit(ax,df,Nx,Ny,zp,T):
+def contourfit(ax,df,Nx,Ny,zp,T,Vin,Vout):
     x = []; y = []
     for i in range(1,Nx+1):
         x.append(i)
@@ -88,7 +88,8 @@ def contourfit(ax,df,Nx,Ny,zp,T):
     Z = f(df,x,y,zp,T)
     # fig = plt.figure(figsize=(6,4))
     # ax = fig.add_axes([0.2,0.2,0.7,0.6])
-    heatmap = ax.contourf(X,Y, Z,cmap='RdGy')
+    levels= np.linspace(Vout,Vin,20)
+    heatmap = ax.contourf(X,Y, Z,levels=levels,cmap='RdGy')
 
     # contouraxes(ax,heatmap,Nx,Ny)
 
