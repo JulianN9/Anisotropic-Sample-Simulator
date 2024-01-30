@@ -1,0 +1,4 @@
+1) Custom r_x, r_y, r_z
+2) Fitting Functionality
+3) Temperature Range
+4) Better matrix representation

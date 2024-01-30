@@ -1,7 +1,7 @@
 import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QSlider, QLabel
+from PySide6.QtWidgets import QSlider, QLabel, QSizePolicy, QVBoxLayout
 from ui_MainWindow import Ui_MainWindow
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -14,15 +14,7 @@ from ContourPlot import contourfit
 from MatrixDiagram import plotMatrix
 from ResistancePlot import ResistancePlot
 
-# # Show the GUI
-# loader = QUiLoader()
-# app = QtWidgets.QApplication(sys.argv)
-# window = loader.load("AnisotropicSimulator.ui", None)
-# window.show()
-# app.exec()
-
-# # Code the GUI
-
+# Class to plot matplotlib
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -30,6 +22,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
 
+# Main Window Class
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -39,6 +32,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.pushButton.setCheckable(True)
         self.IntializeButton.clicked.connect(self.Initialize)
         self.MeasureButton.clicked.connect(self.Measure)
+        # self.TabWidget.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
 
         # Setting Ranges on Positions:
         self.NxBox.valueChanged[int].connect(self.changeNxValue)
@@ -47,6 +41,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Matrix Presentation:
         self.MatrixCanvas = MplCanvas(self, width=6, height=4, dpi=100)
+        self.MatrixLayout = QVBoxLayout()
+        self.MatrixTab.setLayout(self.MatrixLayout)
         self.MatrixLayout.addWidget(self.MatrixCanvas)
         plotMatrix(self.MatrixCanvas.axes,24,12,1,1,1,12)
         self.MatrixCanvas.draw()
@@ -76,6 +72,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.TemperatureLabel = QLabel(self.ContourTab)
         self.TemperatureLabel.setText("Temperature: "+str(300.0))
 
+        self.ContourLayout = QVBoxLayout()
+        self.ContourTab.setLayout(self.ContourLayout)
+
         self.ContourLayout.addWidget(self.ContourCanvas)
         self.ContourLayout.addWidget(self.TemperatureSlider)
         self.ContourLayout.addWidget(self.TemperatureLabel)
@@ -85,47 +84,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ResistanceCanvas = MplCanvas(self, width=5, height=4, dpi=100)
 
         self.ResistanceToolbar = NavigationToolbar(self.ResistanceCanvas, self)
+        self.ResistanceLayout = QVBoxLayout()
+        self.ResistanceTab.setLayout(self.ResistanceLayout)
         self.ResistanceLayout.addWidget(self.ResistanceToolbar)
 
         self.ResistanceLayout.addWidget(self.ResistanceCanvas)
 
     def Initialize(self):
-        self.Nx = self.NxBox.value()
-        self.Ny = self.NyBox.value()
-        self.Nz = self.NzBox.value()
-        self.Ix = self.IxBox.value()
-        self.Iy = self.IyBox.value()
-        self.Iz = self.IzBox.value()
-        self.Ox = self.OxBox.value()
-        self.Oy = self.OyBox.value()
-        self.Oz = self.OzBox.value()
-        self.Vin = self.IvBox.value()
-        self.Vout = self.OvBox.value()
+        # Defining size of matrix, current input and output locations and values:
+        self.Nx = self.NxBox.value(); self.Ny = self.NyBox.value(); self.Nz = self.NzBox.value()
+        self.Ix = self.IxBox.value(); self.Iy = self.IyBox.value(); self.Iz = self.IzBox.value()
+        self.Ox = self.OxBox.value(); self.Oy = self.OyBox.value(); self.Oz = self.OzBox.value()
+        self.Vin = self.IvBox.value(); self.Vout = self.OvBox.value()
+        # Simulating the voltage matrices across the temperature range
         self.df = simulate(self.Nx,self.Ny,self.Nz,self.Ix,self.Iy,self.Iz,self.Ox,self.Oy,self.Oz,self.Vin,self.Vout)
-
+        # Plotting the TMax, Z=1 contour on the contour tab:
         contourfit(self.ContourCanvas.axes,self.df,self.Nx,self.Ny,1,0)
         self.ContourCanvas.draw()
-
+        # Setting the T slider to the correct location and enabling it:
         self.TemperatureSlider.setValue(0)
         self.TemperatureSlider.setEnabled(True)
-
+        # Setting the Z slider to the correct location and enabling it:
         self.ZSlider.setValue(1)
         self.ZSlider.setMaximum(self.NzBox.value())
         self.ZSlider.setEnabled(True)
-
+        # Enabling the measure resistivity button:
         self.MeasureButton.setEnabled(True)
-
+        # Resetting the resistance canvas:
         self.ResistanceCanvas.axes.clear()
         self.ResistanceCanvas.draw()
 
     def Measure(self):
-        self.IPx = self.IPxBox.value()
-        self.IPy = self.IPyBox.value()
-        self.IPz = self.IPzBox.value()
-        self.OPx = self.OPxBox.value()
-        self.OPy = self.OPyBox.value()
-        self.OPz = self.OPzBox.value()
-
+        # Define location of the two probes on the sample
+        self.IPx = self.IPxBox.value(); self.IPy = self.IPyBox.value(); self.IPz = self.IPzBox.value()
+        self.OPx = self.OPxBox.value(); self.OPy = self.OPyBox.value(); self.OPz = self.OPzBox.value()
+        # Plot the resistance across these points through the temperature range.
         ResistancePlot(self.ResistanceCanvas.axes,self.df,self.IPx,self.IPy,self.IPz,self.OPx,self.OPy,self.OPz,self.CheckX.isChecked(),self.CheckY.isChecked())
         self.ResistanceCanvas.draw()
 
@@ -163,4 +156,4 @@ app = QtWidgets.QApplication(sys.argv)
 
 window = MainWindow()
 window.show()
-app.exec()
+sys.exit(app.exec())
