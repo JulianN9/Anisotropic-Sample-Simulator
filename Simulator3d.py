@@ -66,13 +66,10 @@ def poissonmatrix(Nx,Ny,Nz,rx,ry,rz,plot=False):
     return A
 
 # Calculating the Voltage
-def voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout,plot=False):
+def voltagematrix(A,L,Nx,Ny,Nz,Vlist,plot=False):
     V = np.zeros(Nx*Ny*Nz)
     for count,value in enumerate(L):
-        if count < floor(len(L)/2):
-            V[value] = Vout
-        else:
-            V[value] = Vin
+        V[value] = Vlist[count]
 
     b = np.matmul(A,V)
     Ar = A
@@ -101,17 +98,26 @@ def voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout,plot=False):
     return(V)
 
 # Simulated for a given set of input/output pins
-def simulate(Nx,Ny,Nz,Ilist,Olist,Vin,Vout,Tlist):
+def simulate(Nlist,Ilist,Olist,VIO,Tlist):
     data = []
+    Nx, Ny, Nz = Nlist
+    Vin, Vout = VIO
     AL = np.array([1,Nx,Nx*Ny])
     L = [np.dot(np.array(p)-1,AL) for p in Ilist+Olist]
+    VValues = np.zeros(len(Ilist)+len(Olist))
+    for i in range(len(VValues)):
+        if i< len(Ilist):
+            VValues[i] = Vout
+        else:
+            VValues[i] = Vin
+    print(VValues)
     save = False
 
     for T in Tlist:
         Rx = rx(T,Nx); Ry = ry(T,Ny); Rz = rx(T,Nz)
         A = poissonmatrix(Nx,Ny,Nz,Rx,Ry,Rz,False)
 
-        V = voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout)
+        V = voltagematrix(A,L,Nx,Ny,Nz,VValues)
 
         # dQ = [ np.matmul(A,V)[i] for i in iolist[count] ]
         dQ = np.matmul(A,V)

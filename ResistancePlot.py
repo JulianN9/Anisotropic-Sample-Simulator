@@ -13,8 +13,11 @@ def RVTaxes(ax,ur = False):
         ax.set_xlim(0,300)
         ax.legend(fontsize='16')
 
-def ResistancePlot(ax,df,IPx,IPy,IPz,OPx,OPy,OPz,CheckX,CheckY,CheckZ):
+def ResistancePlot(ax,df,IPlist,OPlist,CheckX,CheckY,CheckZ):
     ax.clear()
+
+    IPx,IPy,IPz = IPlist[0]
+    OPx,OPy,OPz = OPlist[0]
 
     inputpin = "V["+str(IPx)+","+str(IPy)+","+str(IPz)+"]" 
     outputpin = "V["+str(OPx)+","+str(OPy)+","+str(OPz)+"]"

@@ -78,7 +78,9 @@ def contouraxes(ax,heatmap,Nx,Ny,axtitle=1,gift = False,mixed = 'none'):
         if(mixed == 'bottom'):
             ax.set_yticks([])
 
-def contourfit(ax,df,Nx,Ny,zp,T,Vin,Vout):
+def plotContour(ax,df,N,zp,T,VIO):
+    Nx, Ny, Nz = N
+    Vin, Vout = VIO
     x = []; y = []
     for i in range(1,Nx+1):
         x.append(i)

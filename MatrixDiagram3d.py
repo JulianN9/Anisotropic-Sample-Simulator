@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt 
+import numpy as np
 
-def plotMatrix(ax,Nx,Ny,Nz):
+def plotMatrix(ax,Nlist):
+  Nx, Ny, Nz = Nlist
   X = []; Y = []; Z= []
   for i in range(Nx):
     for j in range(Ny):
@@ -24,9 +26,10 @@ def plotMatrix(ax,Nx,Ny,Nz):
   ax.set_zticks([])
   ax.axis('off')
 
-def plotLeads(ax,Ix,Iy,Iz,Ox,Oy,Oz,c,m):
-  ax.scatter([Ix-1],[Iz-1],[Iy-1],s=50,c=c,marker=m)
-  ax.scatter([Ox-1],[Oz-1],[Oy-1],s=50,c=c,marker=m)
+def plotLeads(ax,Ilist,Olist,c,m):
+  scatterlist = (np.array(Ilist+Olist)-1).T
+  scatterlist[[1,2]] = scatterlist[[2,1]]
+  ax.scatter(*scatterlist,s=50,c=c,marker=m)    
 
 if __name__ == "__main__":
   Nx = 24; Ny =12; Nz = 2
