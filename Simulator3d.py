@@ -101,17 +101,16 @@ def voltagematrix(A,L,Nx,Ny,Nz,Vlist,plot=False):
 def simulate(Nlist,Ilist,Olist,VIO,Tlist):
     data = []
     Nx, Ny, Nz = Nlist
-    Vin, Vout = VIO
+
     AL = np.array([1,Nx,Nx*Ny])
     L = [np.dot(np.array(p)-1,AL) for p in Ilist+Olist]
+
     VValues = np.zeros(len(Ilist)+len(Olist))
     for i in range(len(VValues)):
         if i< len(Ilist):
-            VValues[i] = Vout
+            VValues[i] = VIO[1]
         else:
-            VValues[i] = Vin
-    print(VValues)
-    save = False
+            VValues[i] = VIO[0]
 
     for T in Tlist:
         Rx = rx(T,Nx); Ry = ry(T,Ny); Rz = rx(T,Nz)
