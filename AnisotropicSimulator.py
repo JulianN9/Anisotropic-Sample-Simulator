@@ -3,7 +3,7 @@ import numpy as np
 import itertools as it
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QSlider, QLabel, QSizePolicy, QVBoxLayout, QDialog
+from PySide6.QtWidgets import QSlider, QLabel, QSizePolicy, QVBoxLayout, QHBoxLayout, QDialog
 from ui_MainWindow import Ui_MainWindow
 from ui_AdvancedOptions import Ui_AdvancedOptions
 import matplotlib
@@ -17,6 +17,7 @@ from ContourPlot import plotContour
 from MatrixDiagram3d import plotMatrix, plotLeads
 from ResistancePlot import ResistancePlot
 from ResistivityFunctions import userfunction
+from Fitting import fitR
 
 # Iterating the inputlists over their widths.
 def inputlist(list,listWidth):
@@ -63,6 +64,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RxButtonBox.accepted.connect(self.CalcRxList)
         self.RyButtonBox.accepted.connect(self.CalcRyList)
         self.RzButtonBox.accepted.connect(self.CalcRzList)
+        self.RxButtonBox.accepted.connect(self.PlotResitivity)
+        self.RyButtonBox.accepted.connect(self.PlotResitivity)
+        self.RzButtonBox.accepted.connect(self.PlotResitivity)
         self.RxButtonBox.rejected.connect(self.SetRxValues)
         self.RyButtonBox.rejected.connect(self.SetRyValues)
         self.RzButtonBox.rejected.connect(self.SetRzValues)
@@ -145,6 +149,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.PlotResitivity()
 
+        # Fitting Presentation:
+        self.FittingCanvas = MplCanvas(self, width=5, height=4, dpi=100)
+
+        self.FittingToolbar = NavigationToolbar(self.FittingCanvas, self)
+        self.FittingLayout = QVBoxLayout()
+        self.FittingTab.setLayout(self.FittingLayout)
+        self.FittingLayout.addWidget(self.FittingToolbar)
+
+        self.FittingLayout.addWidget(self.FittingCanvas)
+        self.FittingLayoutButtons = QHBoxLayout()
+        self.FittingLayout.addLayout(self.FittingLayoutButtons)
+        self.FittingPins = QtWidgets.QPushButton("Fit Pins")
+        self.FittingRx = QtWidgets.QPushButton("Fit Rx")
+        self.FittingRy = QtWidgets.QPushButton("Fit Ry")
+        self.FittingRz = QtWidgets.QPushButton("Fit Rz")
+        self.FittingLayoutButtons.addWidget(self.FittingPins)
+        self.FittingLayoutButtons.addWidget(self.FittingRx)
+        self.FittingLayoutButtons.addWidget(self.FittingRy)
+        self.FittingLayoutButtons.addWidget(self.FittingRz)
+
     def GrabMValues(self):
         self.N = [self.NxBox.value(),self.NyBox.value(),self.NzBox.value()]
         self.Vlist = [ self.IvBox.value(), self.OvBox.value() ]
@@ -165,6 +189,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RxB2 = [self.RxB2A.value(), self.RxB2B.value(), self.RxPoly3Check.isChecked()]
         self.RxB3 = [self.RxB3A.value(), self.RxB3B.value(), self.RxPoly4Check.isChecked()]
         self.RxB4 = [self.RxB4A.value(), self.RxB4B.value(), self.RxPoly5Check.isChecked()]
+        return self.RxScaleNxCheck.isChecked()
 
     def GrabRyValues(self):
         #Ry Polynomials
@@ -178,6 +203,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RyB2 = [self.RyB2A.value(), self.RyB2B.value(), self.RyPoly3Check.isChecked()]
         self.RyB3 = [self.RyB3A.value(), self.RyB3B.value(), self.RyPoly4Check.isChecked()]
         self.RyB4 = [self.RyB4A.value(), self.RyB4B.value(), self.RyPoly5Check.isChecked()]
+        return self.RyScaleNyCheck.isChecked()
 
     def GrabRzValues(self):
         #Rz Polynomials
@@ -191,6 +217,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RzB2 = [self.RzB2A.value(), self.RzB2B.value(), self.RzPoly3Check.isChecked()]
         self.RzB3 = [self.RzB3A.value(), self.RzB3B.value(), self.RzPoly4Check.isChecked()]
         self.RzB4 = [self.RzB4A.value(), self.RzB4B.value(), self.RzPoly5Check.isChecked()]
+        return self.RzScaleNzCheck.isChecked()
 
     def SetRxValues(self):
         #Rx Polynomials
@@ -233,22 +260,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # Move the sacle
     def CalcRxList(self):
-        self.GrabRxValues()
-        # Prefactor = self.RxScale.value()/max(self.N[0]-1,1)
-        Prefactor = self.RxScale.value()
-        self.Rx = Prefactor*userfunction(self.TemperatureList,*self.RxP1,*self.RxP2,*self.RxP3,*self.RxP4,*self.RxP5,*self.RxB1,*self.RxB2,*self.RxB3,*self.RxB4)
+        if self.GrabRxValues():
+            Prefactor = self.RxScale.value()/max(self.N[0]-1,1)
+        else:
+            Prefactor = self.RxScale.value()
+        self.Rx = Prefactor*userfunction(self.TemperatureList,self.RxP1,self.RxP2,self.RxP3,self.RxP4,self.RxP5,self.RxB1,self.RxB2,self.RxB3,self.RxB4)
         
     def CalcRyList(self):
-        self.GrabRyValues()
-        # Prefactor = self.RyScale.value()/max(self.N[1]-1,1)
-        Prefactor = self.RyScale.value()
-        self.Ry = Prefactor*userfunction(self.TemperatureList,*self.RyP1,*self.RyP2,*self.RyP3,*self.RyP4,*self.RyP5,*self.RyB1,*self.RyB2,*self.RyB3,*self.RyB4)
+        if self.GrabRyValues():
+            Prefactor = self.RyScale.value()/max(self.N[1]-1,1)
+        else:
+            Prefactor = self.RyScale.value()
+        self.Ry = Prefactor*userfunction(self.TemperatureList,self.RyP1,self.RyP2,self.RyP3,self.RyP4,self.RyP5,self.RyB1,self.RyB2,self.RyB3,self.RyB4)
 
     def CalcRzList(self):
-        self.GrabRzValues()
-        # Prefactor = self.RzScale.value()/max(self.N[2]-1,1)
-        Prefactor = self.RzScale.value()
-        self.Rz = Prefactor*userfunction(self.TemperatureList,*self.RzP1,*self.RzP2,*self.RzP3,*self.RzP4,*self.RzP5,*self.RzB1,*self.RzB2,*self.RzB3,*self.RzB4)
+        if self.GrabRzValues():
+            Prefactor = self.RzScale.value()/max(self.N[2]-1,1)
+        else:
+            Prefactor = self.RzScale.value()
+        self.Rz = Prefactor*userfunction(self.TemperatureList,self.RzP1,self.RzP2,self.RzP3,self.RzP4,self.RzP5,self.RzB1,self.RzB2,self.RzB3,self.RzB4)
         
     def PlotResitivity(self):
         self.ResistivityCanvas.axes.clear()
@@ -278,7 +308,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Defining size of matrix, current input and output locations and values:
         self.GrabMValues()
         # Simulating the voltage matrices across the temperature range
-        self.df = simulate(self.N,self.Ilist,self.Olist,self.Vlist,self.TemperatureList)
+        self.df = simulate(self.N,self.Ilist,self.Olist,self.Vlist,self.TemperatureList,[self.Rx,self.Ry,self.Rz])
         # Plotting the TMax, Z=1 contour on the contour tab:
         self.ContourCanvas.axes.clear()
         plotContour(self.ContourCanvas.axes,self.df,self.N,1,0,self.Vlist)
@@ -293,6 +323,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.MeasureButton.setEnabled(True)
         self.ContourTab.setEnabled(True)
         self.ResistanceTab.setEnabled(True)
+        self.FittingTab.setEnabled(True)
         # Resetting the resistance canvas:
         self.ResistanceCanvas.axes.clear()
         self.ResistanceCanvas.draw()
@@ -372,8 +403,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.OvBox.setMaximum(self.IvBox.value()-0.01)
         self.MeasurementWidget.setEnabled(False)
 
-app = QtWidgets.QApplication(sys.argv)
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
 
-window = MainWindow()
-window.show()
-sys.exit(app.exec())
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())

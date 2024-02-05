@@ -12,11 +12,11 @@ def boltz(T,A,B,check=True):
         return 1
 
 # Defaults: P = [[]]
-def userfunction(T,p1a,p1b,p1c,p2a,p2b,p2c,p3a,p3b,p3c,p4a,p4b,p4c,p5a,p5b,p5c,b1a,b1b,b1c,b2a,b2b,b2c,b3a,b3b,b3c,b4a,b4b,b4c):
-    p1 = [p1a,p1b,p1c]; p2 = [p2a,p2b,p2c]; p3 = [p3a,p3b,p3c]; p4 = [p4a,p4b,p4c]; p5 = [p5a,p5b,p5c]
-    b1 = [b1a,b1b]; b2 = [b2a,b2b]; b3 = [b3a,b3b]; b4 = [b4a,b4b]
+def userfunction(T,p1,p2,p3,p4,p5,b1,b2,b3,b4):
+    # p1 = [p1a,p1b,p1c]; p2 = [p2a,p2b,p2c]; p3 = [p3a,p3b,p3c]; p4 = [p4a,p4b,p4c]; p5 = [p5a,p5b,p5c]
+    # b1 = [b1a,b1b]; b2 = [b2a,b2b]; b3 = [b3a,b3b]; b4 = [b4a,b4b]
     P1 = poly(T,*p1); P2 = poly(T,*p2); P3 = poly(T,*p3); P4 = poly(T,*p4); P5 = poly(T,*p5)
-    B1 = boltz(T,*b1,b1c); B2 = boltz(T,*b2,b2c); B3 = boltz(T,*b3,b3c); B4 = boltz(T,*b4,b4c); 
+    B1 = boltz(T,*b1); B2 = boltz(T,*b2); B3 = boltz(T,*b3); B4 = boltz(T,*b4); 
     uf = P1*B1 + (1-B1)*P2*B2 + (1-B2)*P3*B3 + (1-B3)*P4*B4 + (1-B4)*P5
     return uf
 

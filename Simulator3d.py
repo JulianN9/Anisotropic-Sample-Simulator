@@ -1,19 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from math import floor
-from ResistivityFunctions import R_c, R_ab
-
-# Dividing by size of lattice to get strength of resistors, 160 and 20 are arbitrary scaling factors
-def rx(T,Nx):
-    Nx = max(2,Nx)
-    return 300*R_ab(T)/(Nx-1) #For summer 2023 data
-    # return R_ab(T)/(Nx-1)
-
-def ry(T,Ny):
-    Ny = max(2,Ny)
-    return 20*R_c(T)/(Ny-1) #For summer 2023 data
-    # return R_c(T)/(Ny-1)
 
 # Setting up the Inverse Connectivity Matrix
 def poissonmatrix(Nx,Ny,Nz,rx,ry,rz,plot=False):
@@ -98,9 +85,10 @@ def voltagematrix(A,L,Nx,Ny,Nz,Vlist,plot=False):
     return(V)
 
 # Simulated for a given set of input/output pins
-def simulate(Nlist,Ilist,Olist,VIO,Tlist):
+def simulate(Nlist,Ilist,Olist,VIO,Tlist,Rlist):
     data = []
     Nx, Ny, Nz = Nlist
+    Rxl, Ryl, Rzl = Rlist
 
     AL = np.array([1,Nx,Nx*Ny])
     L = [np.dot(np.array(p)-1,AL) for p in Ilist+Olist]
@@ -112,8 +100,8 @@ def simulate(Nlist,Ilist,Olist,VIO,Tlist):
         else:
             VValues[i] = VIO[0]
 
-    for T in Tlist:
-        Rx = rx(T,Nx); Ry = ry(T,Ny); Rz = rx(T,Nz)
+    for count, T in enumerate(Tlist):
+        Rx = Rxl[count]; Ry = Ryl[count]; Rz = Rzl[count]
         A = poissonmatrix(Nx,Ny,Nz,Rx,Ry,Rz,False)
 
         V = voltagematrix(A,L,Nx,Ny,Nz,VValues)
@@ -139,13 +127,3 @@ def simulate(Nlist,Ilist,Olist,VIO,Tlist):
 
     df = pd.DataFrame(data,columns=headerlist) # Making a dataframe from the data
     return df
-
-if __name__ == "__main__":
-    T = 300; Nx =4; Ny = 3; Nz =2
-    # Rx = 1; Ry = 2; Rz = 2
-    # L = [(2)+Nx*(0),(2)+Nx*(Ny-1)]
-    # Vin = 5; Vout =-5
-    # A = poissonmatrix(Nx,Ny,Nz,Rx,Ry,Rz,True)
-    # V = voltagematrix(A,L,Nx,Ny,Nz,Vin,Vout,True)
-
-    simulate(Nx,Ny,Nz,[[1,1,1],[2,1,1]],[[1,3,1]],5,-5,np.linspace(2,300,100))

@@ -654,6 +654,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="RxPoly4Check">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Poly 4</string>
             </property>
@@ -661,6 +664,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="RxPoly5Check">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Poly 5</string>
             </property>
@@ -1348,6 +1354,9 @@
          <layout class="QHBoxLayout" name="RyTickLayout">
           <item>
            <widget class="QCheckBox" name="RyPoly2Check">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="text">
              <string>Poly 2</string>
             </property>
@@ -1375,6 +1384,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="RyPoly5Check">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Poly 5</string>
             </property>
@@ -2085,6 +2097,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="RzPoly4Check">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Poly 4</string>
             </property>
@@ -2092,6 +2107,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="RzPoly5Check">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Poly 5</string>
             </property>

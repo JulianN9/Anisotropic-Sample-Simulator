@@ -1,4 +1,4 @@
-1) Custom r_x, r_y, r_z - Figure out Nx/Ny/Nz Scaling
+1) Enable next poly after the last
 2) Fitting Functionality
 5) Saving Functionality
 6) Constant Current Mode

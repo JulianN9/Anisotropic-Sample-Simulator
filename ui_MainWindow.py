@@ -489,11 +489,13 @@ class Ui_MainWindow(object):
 
         self.RxPoly4Check = QCheckBox(self.RxTab)
         self.RxPoly4Check.setObjectName(u"RxPoly4Check")
+        self.RxPoly4Check.setEnabled(False)
 
         self.RxTickLayout.addWidget(self.RxPoly4Check)
 
         self.RxPoly5Check = QCheckBox(self.RxTab)
         self.RxPoly5Check.setObjectName(u"RxPoly5Check")
+        self.RxPoly5Check.setEnabled(False)
 
         self.RxTickLayout.addWidget(self.RxPoly5Check)
 
@@ -971,6 +973,7 @@ class Ui_MainWindow(object):
         self.RyTickLayout.setObjectName(u"RyTickLayout")
         self.RyPoly2Check = QCheckBox(self.RyTab)
         self.RyPoly2Check.setObjectName(u"RyPoly2Check")
+        self.RyPoly2Check.setEnabled(True)
         self.RyPoly2Check.setChecked(True)
 
         self.RyTickLayout.addWidget(self.RyPoly2Check)
@@ -988,6 +991,7 @@ class Ui_MainWindow(object):
 
         self.RyPoly5Check = QCheckBox(self.RyTab)
         self.RyPoly5Check.setObjectName(u"RyPoly5Check")
+        self.RyPoly5Check.setEnabled(False)
 
         self.RyTickLayout.addWidget(self.RyPoly5Check)
 
@@ -1478,11 +1482,13 @@ class Ui_MainWindow(object):
 
         self.RzPoly4Check = QCheckBox(self.RzTab)
         self.RzPoly4Check.setObjectName(u"RzPoly4Check")
+        self.RzPoly4Check.setEnabled(False)
 
         self.RzTickLayout.addWidget(self.RzPoly4Check)
 
         self.RzPoly5Check = QCheckBox(self.RzTab)
         self.RzPoly5Check.setObjectName(u"RzPoly5Check")
+        self.RzPoly5Check.setEnabled(False)
 
         self.RzTickLayout.addWidget(self.RzPoly5Check)
 
