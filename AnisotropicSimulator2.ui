@@ -1355,7 +1355,7 @@
           <item>
            <widget class="QCheckBox" name="RyPoly2Check">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="text">
              <string>Poly 2</string>

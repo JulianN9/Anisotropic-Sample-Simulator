@@ -1,5 +1,4 @@
-1) Enable next poly after the last
-2) Fitting Functionality
+2) Fitting Functionality - Implemented, needs to be checked
 5) Saving Functionality
 6) Constant Current Mode
 7) Correct current for size of lead

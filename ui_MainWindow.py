@@ -973,7 +973,7 @@ class Ui_MainWindow(object):
         self.RyTickLayout.setObjectName(u"RyTickLayout")
         self.RyPoly2Check = QCheckBox(self.RyTab)
         self.RyPoly2Check.setObjectName(u"RyPoly2Check")
-        self.RyPoly2Check.setEnabled(True)
+        self.RyPoly2Check.setEnabled(False)
         self.RyPoly2Check.setChecked(True)
 
         self.RyTickLayout.addWidget(self.RyPoly2Check)

@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
-    QDialogButtonBox, QFormLayout, QGridLayout, QLabel,
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
+    QFormLayout, QGridLayout, QLabel, QPlainTextEdit,
     QPushButton, QSizePolicy, QSpinBox, QVBoxLayout,
     QWidget)
 
@@ -175,21 +175,41 @@ class Ui_AdvancedOptions(object):
 
         self.formLayout.setWidget(4, QFormLayout.LabelRole, self.label_13)
 
-        self.AORLayout = QVBoxLayout()
-        self.AORLayout.setObjectName(u"AORLayout")
         self.ResistivityButton = QPushButton(AdvancedOptions)
         self.ResistivityButton.setObjectName(u"ResistivityButton")
 
-        self.AORLayout.addWidget(self.ResistivityButton)
+        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.ResistivityButton)
 
-        self.MatrixSizeTick = QCheckBox(AdvancedOptions)
-        self.MatrixSizeTick.setObjectName(u"MatrixSizeTick")
-        self.MatrixSizeTick.setChecked(True)
+        self.label = QLabel(AdvancedOptions)
+        self.label.setObjectName(u"label")
 
-        self.AORLayout.addWidget(self.MatrixSizeTick)
+        self.formLayout.setWidget(6, QFormLayout.LabelRole, self.label)
 
+        self.label_3 = QLabel(AdvancedOptions)
+        self.label_3.setObjectName(u"label_3")
 
-        self.formLayout.setLayout(4, QFormLayout.FieldRole, self.AORLayout)
+        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.label_3)
+
+        self.ResistivitySR = QSpinBox(AdvancedOptions)
+        self.ResistivitySR.setObjectName(u"ResistivitySR")
+        self.ResistivitySR.setMaximum(10000)
+
+        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.ResistivitySR)
+
+        self.ResistivitySeperator = QPlainTextEdit(AdvancedOptions)
+        self.ResistivitySeperator.setObjectName(u"ResistivitySeperator")
+
+        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.ResistivitySeperator)
+
+        self.ResistivityHeader = QPlainTextEdit(AdvancedOptions)
+        self.ResistivityHeader.setObjectName(u"ResistivityHeader")
+
+        self.formLayout.setWidget(7, QFormLayout.FieldRole, self.ResistivityHeader)
+
+        self.ResistivityHeaderLabel = QLabel(AdvancedOptions)
+        self.ResistivityHeaderLabel.setObjectName(u"ResistivityHeaderLabel")
+
+        self.formLayout.setWidget(7, QFormLayout.LabelRole, self.ResistivityHeaderLabel)
 
 
         self.verticalLayout.addLayout(self.formLayout)
@@ -225,6 +245,10 @@ class Ui_AdvancedOptions(object):
         self.ONzLabel.setText(QCoreApplication.translate("AdvancedOptions", u"Z Width", None))
         self.label_13.setText(QCoreApplication.translate("AdvancedOptions", u"Customize Resistivity", None))
         self.ResistivityButton.setText(QCoreApplication.translate("AdvancedOptions", u"Resisitivity Functions", None))
-        self.MatrixSizeTick.setText(QCoreApplication.translate("AdvancedOptions", u"Divide by Matrix Size", None))
+        self.label.setText(QCoreApplication.translate("AdvancedOptions", u"Seperator", None))
+        self.label_3.setText(QCoreApplication.translate("AdvancedOptions", u"Skip Rows", None))
+        self.ResistivitySeperator.setPlainText(QCoreApplication.translate("AdvancedOptions", u",", None))
+        self.ResistivityHeader.setPlainText(QCoreApplication.translate("AdvancedOptions", u"Temperature, Resistivity", None))
+        self.ResistivityHeaderLabel.setText(QCoreApplication.translate("AdvancedOptions", u"Header", None))
     # retranslateUi
 
