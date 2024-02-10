@@ -1,4 +1,4 @@
-2) Fitting Functionality - Implemented, needs to be checked
-5) Saving Functionality
+2) Fitting Functionality - Checked - Needs to be Graphed and Saved
+5) Saving Functionality - Basic, needs file selection and maybe appending df?
 6) Constant Current Mode
 7) Correct current for size of lead

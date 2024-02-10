@@ -14,8 +14,8 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QFormLayout" name="formLayout_3">
+    <item row="0" column="0">
      <widget class="QTabWidget" name="OptionsTabWidget">
       <property name="currentIndex">
        <number>0</number>
@@ -2676,7 +2676,7 @@
       </widget>
      </widget>
     </item>
-    <item>
+    <item row="0" column="1">
      <widget class="QTabWidget" name="DisplayTabWidget">
       <property name="enabled">
        <bool>true</bool>

@@ -71,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Basic Functionality:
         # Setting up the Dictionary
         self.VD = {}
+        self.FD = {}
         self.VD['TRange'] = [2,300,100]
         self.VD['INlist'] = [1,1,1]
         self.VD['ONlist'] = [1,1,1]
@@ -202,6 +203,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.FittingLayoutButtons.addWidget(self.FittingRy)
         self.FittingLayoutButtons.addWidget(self.FittingRz)
 
+        # self.DataPD = pd.DataFrame()
+        self.FittingPins.clicked.connect(self.FittingWrapperP)
+        self.FittingRx.clicked.connect(self.FittingWrapperX)
+        self.FittingRy.clicked.connect(self.FittingWrapperY)
+        self.FittingRz.clicked.connect(self.FittingWrapperZ)
+
+
         # Setting Up Actions:
         # self.menubar.triggered()
         # self.actionSave.triggered.connect(self.SaveDict('saved_dictionary'))
@@ -277,10 +285,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RxP4A.setValue(self.VD['RxP4'][0]); self.RxP4B.setValue(self.VD['RxP4'][1]); self.RxP4C.setValue(self.VD['RxP4'][2])
         self.RxP5A.setValue(self.VD['RxP5'][0]); self.RxP5B.setValue(self.VD['RxP5'][1]); self.RxP5C.setValue(self.VD['RxP5'][2])
         #Rx Fermi-Dirac Distributions
-        self.RxB1A.setValue(self.VD['RxB1'][0]); self.RxB1B.setValue(self.VD['RxB1'][1]); self.RzPoly2Check.setChecked(self.VD['RxB1'][2])
-        self.RxB2A.setValue(self.VD['RxB2'][0]); self.RxB2B.setValue(self.VD['RxB2'][1]); self.RzPoly2Check.setChecked(self.VD['RxB2'][2])
-        self.RxB3A.setValue(self.VD['RxB3'][0]); self.RxB3B.setValue(self.VD['RxB3'][1]); self.RzPoly2Check.setChecked(self.VD['RxB3'][2])
-        self.RxB4A.setValue(self.VD['RxB4'][0]); self.RxB4B.setValue(self.VD['RxB4'][1]); self.RzPoly2Check.setChecked(self.VD['RxB4'][2])
+        self.RxB1A.setValue(self.VD['RxB1'][0]); self.RxB1B.setValue(self.VD['RxB1'][1]); self.RxPoly2Check.setChecked(self.VD['RxB1'][2])
+        self.RxB2A.setValue(self.VD['RxB2'][0]); self.RxB2B.setValue(self.VD['RxB2'][1]); self.RxPoly3Check.setChecked(self.VD['RxB2'][2])
+        self.RxB3A.setValue(self.VD['RxB3'][0]); self.RxB3B.setValue(self.VD['RxB3'][1]); self.RxPoly4Check.setChecked(self.VD['RxB3'][2])
+        self.RxB4A.setValue(self.VD['RxB4'][0]); self.RxB4B.setValue(self.VD['RxB4'][1]); self.RxPoly5Check.setChecked(self.VD['RxB4'][2])
 
     def SetRyValues(self):
         #Ry Polynomials
@@ -290,10 +298,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RyP4A.setValue(self.VD['RyP4'][0]); self.RyP4B.setValue(self.VD['RyP4'][1]); self.RyP4C.setValue(self.VD['RyP4'][2])
         self.RyP5A.setValue(self.VD['RyP5'][0]); self.RyP5B.setValue(self.VD['RyP5'][1]); self.RyP5C.setValue(self.VD['RyP5'][2])
         #Ry Fermi-Dirac Distributions
-        self.RyB1A.setValue(self.VD['RyB1'][0]); self.RyB1B.setValue(self.VD['RyB1'][1]); self.RzPoly2Check.setChecked(self.VD['RyB1'][2])
-        self.RyB2A.setValue(self.VD['RyB2'][0]); self.RyB2B.setValue(self.VD['RyB2'][1]); self.RzPoly2Check.setChecked(self.VD['RyB2'][2])
-        self.RyB3A.setValue(self.VD['RyB3'][0]); self.RyB3B.setValue(self.VD['RyB3'][1]); self.RzPoly2Check.setChecked(self.VD['RyB3'][2])
-        self.RyB4A.setValue(self.VD['RyB4'][0]); self.RyB4B.setValue(self.VD['RyB4'][1]); self.RzPoly2Check.setChecked(self.VD['RyB4'][2])
+        self.RyB1A.setValue(self.VD['RyB1'][0]); self.RyB1B.setValue(self.VD['RyB1'][1]); self.RyPoly2Check.setChecked(self.VD['RyB1'][2])
+        self.RyB2A.setValue(self.VD['RyB2'][0]); self.RyB2B.setValue(self.VD['RyB2'][1]); self.RyPoly3Check.setChecked(self.VD['RyB2'][2])
+        self.RyB3A.setValue(self.VD['RyB3'][0]); self.RyB3B.setValue(self.VD['RyB3'][1]); self.RyPoly4Check.setChecked(self.VD['RyB3'][2])
+        self.RyB4A.setValue(self.VD['RyB4'][0]); self.RyB4B.setValue(self.VD['RyB4'][1]); self.RyPoly5Check.setChecked(self.VD['RyB4'][2])
 
     def SetRzValues(self):
         #Rz Polynomials
@@ -304,9 +312,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.RzP5A.setValue(self.VD['RzP5'][0]); self.RzP5B.setValue(self.VD['RzP5'][1]); self.RzP5C.setValue(self.VD['RzP5'][2])
         #Rz Fermi-Dirac Distributions
         self.RzB1A.setValue(self.VD['RzB1'][0]); self.RzB1B.setValue(self.VD['RzB1'][1]); self.RzPoly2Check.setChecked(self.VD['RzB1'][2])
-        self.RzB2A.setValue(self.VD['RzB2'][0]); self.RzB2B.setValue(self.VD['RzB2'][1]); self.RzPoly2Check.setChecked(self.VD['RzB2'][2])
-        self.RzB3A.setValue(self.VD['RzB3'][0]); self.RzB3B.setValue(self.VD['RzB3'][1]); self.RzPoly2Check.setChecked(self.VD['RzB3'][2])
-        self.RzB4A.setValue(self.VD['RzB4'][0]); self.RzB4B.setValue(self.VD['RzB4'][1]); self.RzPoly2Check.setChecked(self.VD['RzB4'][2])
+        self.RzB2A.setValue(self.VD['RzB2'][0]); self.RzB2B.setValue(self.VD['RzB2'][1]); self.RzPoly3Check.setChecked(self.VD['RzB2'][2])
+        self.RzB3A.setValue(self.VD['RzB3'][0]); self.RzB3B.setValue(self.VD['RzB3'][1]); self.RzPoly4Check.setChecked(self.VD['RzB3'][2])
+        self.RzB4A.setValue(self.VD['RzB4'][0]); self.RzB4B.setValue(self.VD['RzB4'][1]); self.RzPoly5Check.setChecked(self.VD['RzB4'][2])
 
     def CalcRxList(self):
         if self.GrabRxValues():
@@ -517,10 +525,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def OpenAO(self):
         self.GrabMValues()
         dlg = AdvancedOptions(self.VD['Nlist'],self.VD['INlist'],self.VD['ONlist'],self.VD['DataSR'],self.VD['DataSep'],self.VD['DataHeader'],self.VD['TRange'])
-        dlg.setWindowTitle("HELLO!")
+        dlg.setWindowTitle("Advanced Options")
         if dlg.exec():
             self.MeasurementWidget.setEnabled(False)
             self.TemperatureList = np.linspace(dlg.TmBox.value(),dlg.TMBox.value(),dlg.TeBox.value())
+            self.VD['TRange'] = [dlg.TmBox.value(),dlg.TMBox.value(),dlg.TeBox.value()]
             self.VD['INlist'] = [dlg.INxBox.value(),dlg.INyBox.value(),dlg.INzBox.value()]
             self.VD['ONlist'] = [dlg.ONxBox.value(),dlg.ONyBox.value(),dlg.ONzBox.value()]
             self.GrabMValues()
@@ -538,6 +547,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.FittingCanvas.axes.clear()
         self.FittingCanvas.axes.plot(self.DataPD['T'],self.DataPD['R'])
         self.FittingCanvas.draw()
+        self.FittingTab.setEnabled(True)
 
     def changeTValue(self, value):
         self.TValue = value
@@ -591,7 +601,114 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.OvBox.setMaximum(self.IvBox.value()-0.01)
         self.MeasurementWidget.setEnabled(False)
 
+    def FittingWrapperP(self):
+        print('fitting')
+        params, count = self.FittingFunction(0)
+
+    def FittingWrapperX(self):
+        print('fitting')
+        params, count, Rfit = self.FittingFunction(1)
+
+        self.FD['RxP1'] = params[0:3]
+        self.FD['xScale'] = params[-1]
+        for i in range(4):
+            if i < count-1:
+                inputP = 'RxP'+str(i+2)
+                inputB = 'RxB'+str(count-1-i)
+                self.FD[inputP] = params[3*(i+1):3*(i+2)]
+                self.FD[inputB] = params[-(1+2*(i+1)):-(1+2*i)]+[True]
+            else: 
+                inputP = 'RxP'+str(i+2)
+                inputB = 'RxB'+str(1+i)
+                self.FD[inputP] = [1,1,0]
+                self.FD[inputB] = [1,1,False]
+        print(self.FD)
+
+        newscale = max(self.DataPD['R'])/max(Rfit)
+        self.FittingCanvas.axes.plot(self.TemperatureList,newscale*Rfit)
+        self.FittingCanvas.draw()
+
+    def FittingWrapperY(self):
+        print('fitting')
+        params, count, Rfit = self.FittingFunction(2)
+        print(params)
+
+        self.FD['RyP1'] = params[0:3]
+        self.FD['yScale'] = params[-1]
+        for i in range(4):
+            if i < count-1:
+                inputP = 'RyP'+str(i+2)
+                inputB = 'RyB'+str(count-1-i)
+                self.FD[inputP] = params[3*(i+1):3*(i+2)]
+                self.FD[inputB] = params[-(1+2*(i+1)):-(1+2*i)]+[True]
+            else: 
+                inputP = 'RyP'+str(i+2)
+                inputB = 'RyB'+str(1+i)
+                self.FD[inputP] = [1,1,0]
+                self.FD[inputB] = [1,1,False]
+        print(self.FD)
+
+        # if self.GrabRyValues():
+        #     Prefactor = self.FD['yScale']/max(self.VD['Nlist'][1]-1,1)
+        # else:
+        #     Prefactor = self.FD['yScale']
+        # self.FT = Prefactor*userfunction(self.TemperatureList,self.FD['RyP1'],self.FD['RyP2'],self.FD['RyP3'],self.FD['RyP4'],self.FD['RyP5'],self.FD['RyB1'],self.FD['RyB2'],self.FD['RyB3'],self.FD['RyB4'])
+        newscale = max(self.DataPD['R'])/max(Rfit)
+        self.FittingCanvas.axes.plot(self.TemperatureList,newscale*Rfit)
+        self.FittingCanvas.draw()
+
+    def FittingWrapperZ(self):
+        print('fitting')
+        params, count, Rfit = self.FittingFunction(3)
+
+        self.FD['RzP1'] = params[0:3]
+        for i in range(4):
+            if i < count-1:
+                inputP = 'RzP'+str(i+2)
+                inputB = 'RzB'+str(count-1-i)
+                self.FD[inputP] = params[3*(i+1):3*(i+2)]
+                self.FD[inputB] = params[-(1+2*(i+1)):-(1+2*i)]+[True]
+            else: 
+                inputP = 'RzP'+str(i+2)
+                inputB = 'RzB'+str(1+i)
+                self.FD[inputP] = [1,1,0]
+                self.FD[inputB] = [1,1,False]
+        print(self.FD)
+
+        newscale = max(self.DataPD['R'])/max(Rfit)
+        self.FittingCanvas.axes.plot(self.TemperatureList,newscale*Rfit)
+        self.FittingCanvas.draw()
+
+    def FittingFunction(self,mode):
+        if mode == 3:
+            if self.GrabRzValues():
+                Prefactor = self.RzScale.value()/max(self.VD['Nlist'][1]-1,1)
+            else:
+                Prefactor = self.RzScale.value()
+            RP = [self.VD['RzP1'],self.VD['RzP2'],self.VD['RzP3'],self.VD['RzP4'],self.VD['RzP5']]
+            RB = [self.VD['RzB1'],self.VD['RzB2'],self.VD['RzB3'],self.VD['RzB4']]
+        elif mode == 2:
+            if self.GrabRyValues():
+                Prefactor = self.RyScale.value()/max(self.VD['Nlist'][1]-1,1)
+            else:
+                Prefactor = self.RyScale.value()
+            RP = [self.VD['RyP1'],self.VD['RyP2'],self.VD['RyP3'],self.VD['RyP4'],self.VD['RyP5']]
+            RB = [self.VD['RyB1'],self.VD['RyB2'],self.VD['RyB3'],self.VD['RyB4']]
+        else:
+            if self.GrabRyValues():
+                Prefactor = self.RyScale.value()/max(self.VD['Nlist'][1]-1,1)
+            else:
+                Prefactor = self.RyScale.value()
+            RP = [self.VD['RxP1'],self.VD['RxP2'],self.VD['RxP3'],self.VD['RxP4'],self.VD['RxP5']]
+            RB = [self.VD['RxB1'],self.VD['RxB2'],self.VD['RxB3'],self.VD['RxB4']]
+        params, count, Rfit = fitR(self.DataPD['R'],self.DataPD['T'],self.TemperatureList,self.VD['Nlist'],self.VD['Ilist'],self.VD['Olist'],self.VD['Vlist'],self.Rx,self.Ry,self.Rz,self.VD['IPlist'],self.VD['OPlist'],RP,RB,Prefactor,mode)
+        return params, count, Rfit
+
     def SaveDict(self):
+        self.GrabRxValues()
+        self.GrabRyValues()
+        self.GrabRzValues()
+        self.GrabMValues()
         with open('saved_dictionary.pkl', 'wb') as f:
             pickle.dump(self.VD,f)
         print(self.VD)
