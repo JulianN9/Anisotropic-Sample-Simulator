@@ -3,11 +3,14 @@ import numpy as np
 import pandas as pd
 import pickle
 import itertools as it
+from time import sleep
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import QObject, QThread, Signal
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QSlider, QLabel, QSizePolicy, QVBoxLayout, QHBoxLayout, QDialog, QFileDialog
 from ui_MainWindow import Ui_MainWindow
 from ui_AdvancedOptions import Ui_AdvancedOptions
+from ui_FittingPopUp import Ui_FittingPopUp
 import matplotlib
 matplotlib.use('Qt5Agg')
 
@@ -61,6 +64,87 @@ class AdvancedOptions(QtWidgets.QDialog, Ui_AdvancedOptions):
 
     def GetFileName(self):
         self.fileName = QFileDialog.getOpenFileName(self,"Load Data", "", "Data File (*.txt *.csv *.lvm *.dat)")[0]
+
+# Worker Thread:
+class FitWorker(QObject):
+    results = Signal(list,int,pd.core.series.Series,int)
+    finished = Signal()
+
+    def __init__(self,mode,VD,PD,TemperatureList,Rx,Ry,Rz):
+        super(FitWorker, self).__init__()
+        self.wmode = mode
+        self.wVD = VD
+        self.wPD = PD
+        self.wTL = TemperatureList
+        self.wRx = Rx
+        self.wRy = Ry
+        self.wRz = Rz
+
+    def run(self):
+        if self.wmode == 3:
+            RP = [self.wVD['RzP1'],self.wVD['RzP2'],self.wVD['RzP3'],self.wVD['RzP4'],self.wVD['RzP5']]
+            RB = [self.wVD['RzB1'],self.wVD['RzB2'],self.wVD['RzB3'],self.wVD['RzB4']]
+        elif self.wmode == 2:
+            RP = [self.wVD['RyP1'],self.wVD['RyP2'],self.wVD['RyP3'],self.wVD['RyP4'],self.wVD['RyP5']]
+            RB = [self.wVD['RyB1'],self.wVD['RyB2'],self.wVD['RyB3'],self.wVD['RyB4']]
+        else:
+            RP = [self.wVD['RxP1'],self.wVD['RxP2'],self.wVD['RxP3'],self.wVD['RxP4'],self.wVD['RxP5']]
+            RB = [self.wVD['RxB1'],self.wVD['RxB2'],self.wVD['RxB3'],self.wVD['RxB4']]
+
+        params, count, Rfit = fitR(self.wPD['R'],self.wPD['T'],self.wTL,self.wVD['Nlist'],self.wVD['Ilist'],self.wVD['Olist'],self.wVD['Vlist'],self.wRx,self.wRy,self.wRz,self.wVD['IPlist'],self.wVD['OPlist'],RP,RB,self.wmode)
+        # sleep(5)
+        # print("Done")
+
+        self.results.emit(params, count, Rfit, self.wmode)
+        self.finished.emit()
+
+# Worker Thread:
+class WaitWorker(QObject):
+    pulse = Signal(int)
+    finished = Signal()
+
+    def __init__(self):
+        super(WaitWorker, self).__init__()
+        self.check = True
+
+    def stop(self):
+        self.check = False
+
+    def run(self):
+        time = 0
+        while(self.check):
+            sleep(1)
+            time += 1
+            self.pulse.emit(time)
+        self.finished.emit()
+
+# Fitting Window Dialog Class
+class FittingPopUp(QtWidgets.QDialog, Ui_FittingPopUp):
+
+    def __init__(self):
+        super(FittingPopUp, self).__init__()
+        self.setupUi(self)
+        self.buttonBox.setEnabled(False)
+
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.waitthread = QThread()
+        self.worker = WaitWorker()
+        self.worker.moveToThread(self.waitthread)
+        self.waitthread.started.connect(self.worker.run)
+        self.worker.pulse.connect(self.TimeUpdate)
+        self.worker.finished.connect(self.waitthread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.waitthread.finished.connect(self.waitthread.deleteLater)
+        # Step 6: Start the thread
+
+        self.waitthread.start()
+
+    def StopTimer(self):
+        self.worker.stop()
+        self.buttonBox.setEnabled(True)
+
+    def TimeUpdate(self,time):
+        self.label.setText(f"Time Elapsed: {time}")
 
 # Main Window Class
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -205,9 +289,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # self.DataPD = pd.DataFrame()
         self.FittingPins.clicked.connect(self.FittingWrapperP)
-        self.FittingRx.clicked.connect(self.FittingWrapperX)
-        self.FittingRy.clicked.connect(self.FittingWrapperY)
-        self.FittingRz.clicked.connect(self.FittingWrapperZ)
+        self.FittingRx.clicked.connect(lambda: self.FittingWrapper(1))
+        self.FittingRy.clicked.connect(lambda: self.FittingWrapper(2))
+        self.FittingRz.clicked.connect(lambda: self.FittingWrapper(3))
 
 
         # Setting Up Actions:
@@ -601,52 +685,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.OvBox.setMaximum(self.IvBox.value()-0.01)
         self.MeasurementWidget.setEnabled(False)
 
-    def FittingWrapperP(self):
-        print('fitting')
-        params, count = self.FittingFunction(0)
+    def FittingResults(self,params,count,Rfit,mode):
+        if mode ==3:
+            RPstr = 'RzP'
+            RBstr = 'RzB'
+        elif mode ==2:
+            RPstr = 'RyP'
+            RBstr = 'RyB'
+        elif mode ==1:
+            RPstr = 'RxP'
+            RBstr = 'RxB'
 
-    def FittingWrapperX(self):
-        print('fitting')
-        params, count, Rfit = self.FittingFunction(1)
-
-        self.FD['RxP1'] = params[0:3]
-        self.FD['xScale'] = params[-1]
+        self.FD[RPstr+'1'] = params[0:3]
+        self.FD['Scale'] = params[-1]
         for i in range(4):
             if i < count-1:
-                inputP = 'RxP'+str(i+2)
-                inputB = 'RxB'+str(count-1-i)
+                inputP = RPstr+str(i+2)
+                inputB = RBstr+str(count-1-i)
                 self.FD[inputP] = params[3*(i+1):3*(i+2)]
                 self.FD[inputB] = params[-(1+2*(i+1)):-(1+2*i)]+[True]
             else: 
-                inputP = 'RxP'+str(i+2)
-                inputB = 'RxB'+str(1+i)
+                inputP = RPstr+str(i+2)
+                inputB = RBstr+str(1+i)
                 self.FD[inputP] = [1,1,0]
                 self.FD[inputB] = [1,1,False]
-        print(self.FD)
-
-        newscale = max(self.DataPD['R'])/max(Rfit)
-        self.FittingCanvas.axes.plot(self.TemperatureList,newscale*Rfit)
-        self.FittingCanvas.draw()
-
-    def FittingWrapperY(self):
-        print('fitting')
-        params, count, Rfit = self.FittingFunction(2)
-        print(params)
-
-        self.FD['RyP1'] = params[0:3]
-        self.FD['yScale'] = params[-1]
-        for i in range(4):
-            if i < count-1:
-                inputP = 'RyP'+str(i+2)
-                inputB = 'RyB'+str(count-1-i)
-                self.FD[inputP] = params[3*(i+1):3*(i+2)]
-                self.FD[inputB] = params[-(1+2*(i+1)):-(1+2*i)]+[True]
-            else: 
-                inputP = 'RyP'+str(i+2)
-                inputB = 'RyB'+str(1+i)
-                self.FD[inputP] = [1,1,0]
-                self.FD[inputB] = [1,1,False]
-        print(self.FD)
+        print("Params: "+str(self.FD))
 
         # if self.GrabRyValues():
         #     Prefactor = self.FD['yScale']/max(self.VD['Nlist'][1]-1,1)
@@ -657,52 +720,54 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.FittingCanvas.axes.plot(self.TemperatureList,newscale*Rfit)
         self.FittingCanvas.draw()
 
-    def FittingWrapperZ(self):
-        print('fitting')
-        params, count, Rfit = self.FittingFunction(3)
-
-        self.FD['RzP1'] = params[0:3]
-        for i in range(4):
-            if i < count-1:
-                inputP = 'RzP'+str(i+2)
-                inputB = 'RzB'+str(count-1-i)
-                self.FD[inputP] = params[3*(i+1):3*(i+2)]
-                self.FD[inputB] = params[-(1+2*(i+1)):-(1+2*i)]+[True]
-            else: 
-                inputP = 'RzP'+str(i+2)
-                inputB = 'RzB'+str(1+i)
-                self.FD[inputP] = [1,1,0]
-                self.FD[inputB] = [1,1,False]
-        print(self.FD)
-
-        newscale = max(self.DataPD['R'])/max(Rfit)
-        self.FittingCanvas.axes.plot(self.TemperatureList,newscale*Rfit)
-        self.FittingCanvas.draw()
-
-    def FittingFunction(self,mode):
-        if mode == 3:
-            if self.GrabRzValues():
-                Prefactor = self.RzScale.value()/max(self.VD['Nlist'][1]-1,1)
-            else:
-                Prefactor = self.RzScale.value()
-            RP = [self.VD['RzP1'],self.VD['RzP2'],self.VD['RzP3'],self.VD['RzP4'],self.VD['RzP5']]
-            RB = [self.VD['RzB1'],self.VD['RzB2'],self.VD['RzB3'],self.VD['RzB4']]
-        elif mode == 2:
-            if self.GrabRyValues():
-                Prefactor = self.RyScale.value()/max(self.VD['Nlist'][1]-1,1)
-            else:
-                Prefactor = self.RyScale.value()
-            RP = [self.VD['RyP1'],self.VD['RyP2'],self.VD['RyP3'],self.VD['RyP4'],self.VD['RyP5']]
-            RB = [self.VD['RyB1'],self.VD['RyB2'],self.VD['RyB3'],self.VD['RyB4']]
+    def FittingWrapper(self,mode):
+        self.FittingTab.setEnabled(False)
+        fitthread = QThread()
+        self.dlg = FittingPopUp()
+                
+        self.worker = FitWorker(mode,self.VD,self.DataPD,self.TemperatureList,self.Rx,self.Ry,self.Rz)
+        self.worker.moveToThread(fitthread)
+        fitthread.started.connect(self.worker.run)
+        self.worker.results.connect(self.FittingResults)
+        self.worker.finished.connect(self.dlg.StopTimer)
+        self.worker.finished.connect(fitthread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        fitthread.finished.connect(fitthread.deleteLater)
+        # Step 6: Start the thread
+        print(self.VD['RyP1'])
+        fitthread.start()
+        print(self.VD['RyP1'])
+        if self.dlg.exec():
+            for key in set(self.FD.keys()):
+                self.VD[key] = self.FD[key] 
+            self.SetRxValues()
+            self.SetRyValues()
+            self.SetRzValues()
         else:
-            if self.GrabRyValues():
-                Prefactor = self.RyScale.value()/max(self.VD['Nlist'][1]-1,1)
-            else:
-                Prefactor = self.RyScale.value()
-            RP = [self.VD['RxP1'],self.VD['RxP2'],self.VD['RxP3'],self.VD['RxP4'],self.VD['RxP5']]
-            RB = [self.VD['RxB1'],self.VD['RxB2'],self.VD['RxB3'],self.VD['RxB4']]
-        params, count, Rfit = fitR(self.DataPD['R'],self.DataPD['T'],self.TemperatureList,self.VD['Nlist'],self.VD['Ilist'],self.VD['Olist'],self.VD['Vlist'],self.Rx,self.Ry,self.Rz,self.VD['IPlist'],self.VD['OPlist'],RP,RB,Prefactor,mode)
-        return params, count, Rfit
+            # There is some problem with the fitting which modifies the RP parameters, untill I can fix this I will just reset the values from below:
+            self.GrabRxValues()
+            self.GrabRyValues()
+            self.GrabRzValues()
+        self.FittingTab.setEnabled(True)
+        # else:
+        #     self.worker.deleteLater()
+        #     fitthread.deleteLater()
+        # Final resets
+        # self.longRunningBtn.setEnabled(False)
+        # self.thread.finished.connect(
+        #     lambda: self.longRunningBtn.setEnabled(True)
+        # )
+        # self.thread.finished.connect(
+        #     lambda: self.stepLabel.setText("Long-Running Step: 0")
+        # )
+
+    def FittingWrapperP(self):
+        print('Broke Right Now')
+        # dlg = FittingPopUp()
+        # dlg.setWindowTitle("Currently Fitting")
+        # dlg.show()
+
+        # params, count = self.FittingFunction(0)
 
     def SaveDict(self):
         self.GrabRxValues()
